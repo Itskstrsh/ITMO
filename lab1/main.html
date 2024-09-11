@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Лабораторная 1</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      header {
+        font-family: serif;
+        color: #2c3e50;
+        font-size: 24px;
+        text-align: center;
+        padding: 5px;
+        background-color: #d0e6eb;
+        width: 100%;
+      }
+
+      .form-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      img {
+        display: block;
+        margin: 20px auto;
+        width: 300px;
+      }
+
+      .controls {
+        text-align: center;
+        margin: 20px;
+      }
+
+      .controls label {
+        display: block;
+        margin: 10px 0;
+        font-size: 18px;
+      }
+
+      .controls input[type="checkbox"],
+      .controls input[type="text"],
+      .controls button {
+        margin: 5px;
+      }
+
+      .controls input[type="text"] {
+        width: 50px;
+      }
+
+      .selected {
+        background-color: #4caf50;
+        color: white;
+      }
+
+      .submit-btn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .table-container {
+        margin: 50px auto;
+        width: 80%;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: center;
+        border: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #88abdc;
+        color: white;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p>ФИО: Рощин Константин Эдуардович</p>
+      <p>Группа: Р3222</p>
+      <p>Номер варианта: 370529</p>
+    </header>
+
+    <main>
+      <div class="form-container">
+        <img src="ось.png" id="screen" />
+        <form id="myForm">
+          <label>Изменение X:</label>
+          <div class="controls">
+            <input
+              type="checkbox"
+              id="x1"
+              name="x"
+              value="-4"
+              onclick="checkOnlyOne(this)"
+            />-4
+            <input
+              type="checkbox"
+              id="x2"
+              name="x"
+              value="-3"
+              onclick="checkOnlyOne(this)"
+            />-3
+            <input
+              type="checkbox"
+              id="x3"
+              name="x"
+              value="-2"
+              onclick="checkOnlyOne(this)"
+            />-2
+            <input
+              type="checkbox"
+              id="x4"
+              name="x"
+              value="-1"
+              onclick="checkOnlyOne(this)"
+            />-1
+            <input
+              type="checkbox"
+              id="x5"
+              name="x"
+              value="0"
+              onclick="checkOnlyOne(this)"
+            />0
+            <input
+              type="checkbox"
+              id="x6"
+              name="x"
+              value="1"
+              onclick="checkOnlyOne(this)"
+            />1
+            <input
+              type="checkbox"
+              id="x7"
+              name="x"
+              value="2"
+              onclick="checkOnlyOne(this)"
+            />2
+            <input
+              type="checkbox"
+              id="x8"
+              name="x"
+              value="3"
+              onclick="checkOnlyOne(this)"
+            />3
+            <input
+              type="checkbox"
+              id="x9"
+              name="x"
+              value="4"
+              onclick="checkOnlyOne(this)"
+            />4
+          </div>
+          <label for="y">Изменение Y (Введите значение от -3 до 5):</label>
+          <div class="controls">
+            <input
+              type="text"
+              id="y"
+              name="y"
+              placeholder="-3 ... 5"
+              oninput="validateYInput(this)"
+            />
+          </div>
+          <input type="hidden" id="r_hidden" name="r" value="" />
+          <label>Изменение R:</label>
+          <div class="controls">
+            <button type="button" name="r" id="r1" onclick="setR(1, this)">
+              1
+            </button>
+            <button type="button" name="r" id="r2" onclick="setR(2, this)">
+              2
+            </button>
+            <button type="button" name="r" id="r3" onclick="setR(3, this)">
+              3
+            </button>
+            <button type="button" name="r" id="r4" onclick="setR(4, this)">
+              4
+            </button>
+            <button type="button" name="r" id="r5" onclick="setR(5, this)">
+              5
+            </button>
+          </div>
+          <button class="submit-btn" type="submit">Отправить данные</button>
+        </form>
+      </div>
+      <div class="table-container">
+        <table id="result">
+          <thead>
+            <tr>
+              <th>X</th>
+              <th>Y</th>
+              <th>R</th>
+              <th>Попадение</th>
+              <th>Дата</th>
+              <th>Время выполнения</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+    <script>
+      // Валидация ввода для Y
+      function validateYInput(input) {
+        let value = input.value;
+        if (value === "-" || value === "") {
+          return;
+        }
+        value = value.replace(/[^-?\d]/g, "");
+        const numValue = Number(value);
+        if (isNaN(numValue) || numValue < -3 || numValue > 5) {
+          alert("Значение Y должно быть числом от -3 до 5.");
+          input.value = "";
+        } else {
+          input.value = value;
+        }
+      }
+
+      // Выбор только одного чекбокса для X
+      function checkOnlyOne(checkbox) {
+        const checkboxes = document.getElementsByName("x");
+        checkboxes.forEach((item) => {
+          if (item !== checkbox) item.checked = false;
+        });
+      }
+
+      // Выбор радиуса R и сброс остальных кнопок
+      let selectedR = null;
+      function setR(value, button) {
+        selectedR = value;
+        document.getElementById("r_hidden").value = selectedR;
+        const buttons = document.querySelectorAll(".controls button");
+        buttons.forEach((btn) => {
+          btn.classList.remove("selected");
+        });
+        button.classList.add("selected");
+      }
+      const form = document.getElementById("myForm");
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const selectedX = document.querySelector('input[name="x"]:checked');
+        if (!selectedX) {
+          alert("Пожалуйста, выберите значение X.");
+          return;
+        }
+
+        const yValue = document.getElementById("y").value;
+        if (!yValue || isNaN(yValue) || yValue < -3 || yValue > 5) {
+          alert("Пожалуйста, введите корректное значение Y.");
+          return;
+        }
+
+        if (selectedR === null) {
+          alert("Пожалуйста, выберите радиус.");
+          return;
+        }
+
+        const data = new FormData(form);
+        var obj = {};
+        data.forEach(function (value, key) {
+          obj[key] = value;
+        });
+        var jsonData = JSON.stringify(obj);
+        console.log("Отправляемые данные:", jsonData);
+        fetch("http://localhost:8080/fcgi-bin/l1.jar", {
+          method: "POST",
+          body: jsonData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log("Ответ от сервера:", data);
+            const parsedData = JSON.parse(data); // Разбираем строку как JSON
+            fillTable(parsedData); // Передаем распарсенные данные в fillTable
+            console.log(parsedData);
+          })
+          .catch((error) => {
+            console.error("Ошибка:", error);
+            alert("Ошибка отправки данных.");
+          });
+      });
+
+      function fillTable(data) {
+        const table = document
+          .getElementById("result")
+          .getElementsByTagName("tbody")[0];
+        const addRow = table.insertRow(-1);
+        const cellX = addRow.insertCell(0);
+        const cellY = addRow.insertCell(1);
+        const cellR = addRow.insertCell(2);
+        const cellAnswer = addRow.insertCell(3);
+        const cellDate = addRow.insertCell(4);
+        const cellExecuteTime = addRow.insertCell(5);
+
+        cellX.textContent = data.x;
+        cellY.textContent = data.y;
+        cellR.textContent = data.r;
+        cellAnswer.textContent = data.answer ? "Попал" : "Не попал";
+        cellDate.textContent = data.curTime;
+        cellExecuteTime.textContent = data.executionTime + " нсек";
+      }
+    </script>
+  </body>
+</html>
