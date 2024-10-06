@@ -138,19 +138,31 @@
             var x = ((event.clientX - rect.left) / rect.width * 2 - 1) * radius;
             var y = ((rect.height - (event.clientY - rect.top)) / rect.height * 2 - 1) * radius;
 
-            // Записываем значения X и Y в скрытые поля
             document.getElementById('x_value').value = x.toFixed(2);
             document.getElementById('y_value').value = y.toFixed(2);
 
-            document.getElementById('coords_form').submit();  // Отправляем форму после клика
+            console.log("X: " + x.toFixed(2) + ", Y: " + y.toFixed(2) + ", Radius: " + radius);
+
+            document.getElementById('coords_form').submit();
         }
 
+
         function validateForm() {
-            var y = document.getElementById("y_value_input").value;
+            var x = document.getElementById("x_value").value;
+            var y = document.getElementById("y_value_input").value || document.getElementById("y_value").value; // Проверка обоих полей
             var radius = document.getElementById("radius_hidden").value;
 
             if (isNaN(y) || y < -5 || y > 5) {
                 alert("Y должно быть числом от -5 до 5.");
+                return false;
+            }
+            if (!y) {
+                alert("Пожалуйста, выберите Y.");
+                return false;
+            }
+
+            if (!x) {
+                alert("Пожалуйста, выберите X.");
                 return false;
             }
 
@@ -159,8 +171,11 @@
                 return false;
             }
 
+            document.getElementById('y_value').value = y;
+
             return true;
         }
+
 
         function setR(value) {
             document.getElementById("radius_hidden").value = value;
@@ -189,7 +204,7 @@
     <div class="content">
         <h2>Проверка попадания точки в область</h2>
 
-        <form id="coords_form" name="coords_form" action="ControllerServlet" method="GET" onsubmit="return validateForm();">
+        <form id="coords_form" name="coords_form" action="ControllerServlet" method="GET" accept-charset="UTF-8" onsubmit="return validateForm();">
             <label>Изменение X:</label>
             <div>
                 <button type="button" class="x-button" id="x-4" onclick="setX(-4)">-4</button>
