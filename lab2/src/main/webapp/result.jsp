@@ -23,8 +23,8 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         table {
-            margin: 0 auto; /* Центрируем таблицу */
-            width: 50%; /* Ограничиваем ширину таблицы */
+            margin: 0 auto;
+            width: 50%;
             border-collapse: collapse;
         }
         table, th, td {

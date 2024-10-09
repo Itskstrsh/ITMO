@@ -44,6 +44,16 @@
             text-align: center;
             margin-top: 20px;
         }
+        .graph-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 500px;
+            height: 500px;
+            margin: 0 auto;
+
+        }
 
         .content {
             background-color: white;
@@ -121,35 +131,60 @@
         }
 
         img {
-            margin: 20px 0;
-            cursor: pointer;
+            display: block;
+            width: 100%;
+            height: auto;
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+
+
+        .dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
         }
     </style>
 
     <script type="text/javascript">
         function handleClick(event) {
-            var radius = document.getElementById("radius_hidden").value;
-            if (!radius) {
+            var radius = parseFloat(document.getElementById("radius_hidden").value);
+            if (isNaN(radius) || radius <= 0) {
                 alert("Пожалуйста, выберите радиус перед кликом по плоскости.");
                 return;
             }
 
-            var rect = event.target.getBoundingClientRect();
-            var x = ((event.clientX - rect.left) / rect.width * 2 - 1) * radius;
-            var y = ((rect.height - (event.clientY - rect.top)) / rect.height * 2 - 1) * radius;
+            var img = event.target; // Получаем элемент изображения
+            var rect = img.getBoundingClientRect(); // Получаем размеры и положение изображения на странице
 
+            // Получаем точные координаты клика относительно изображения
+            var clickX = event.clientX - rect.left;
+            var clickY = event.clientY - rect.top;
+
+            // Преобразуем координаты клика в координаты графика
+            var x = ((clickX / rect.width) * 2 - 1) * radius;
+            var y = ((1 - (clickY / rect.height) * 2)) * radius;
+
+            console.log("Click at X: " + clickX + ", Y: " + clickY);
+            console.log("Transformed X: " + x.toFixed(2) + ", Transformed Y: " + y.toFixed(2));
+
+            // Устанавливаем вычисленные значения в форму
             document.getElementById('x_value').value = x.toFixed(2);
             document.getElementById('y_value').value = y.toFixed(2);
 
-            console.log("X: " + x.toFixed(2) + ", Y: " + y.toFixed(2) + ", Radius: " + radius);
+            // Устанавливаем флаг, что был клик по изображению
+            document.getElementById('image_click').value = "true";
 
+            // Отправляем форму для обработки на сервере
             document.getElementById('coords_form').submit();
         }
 
 
         function validateForm() {
             var x = document.getElementById("x_value").value;
-            var y = document.getElementById("y_value_input").value || document.getElementById("y_value").value; // Проверка обоих полей
+            var y = document.getElementById("y_value_input").value || document.getElementById("y_value").value;
             var radius = document.getElementById("radius_hidden").value;
 
             if (isNaN(y) || y < -5 || y > 5) {
@@ -175,7 +210,6 @@
 
             return true;
         }
-
 
         function setR(value) {
             document.getElementById("radius_hidden").value = value;
@@ -205,6 +239,7 @@
         <h2>Проверка попадания точки в область</h2>
 
         <form id="coords_form" name="coords_form" action="ControllerServlet" method="GET" accept-charset="UTF-8" onsubmit="return validateForm();">
+            <input type="hidden" id="image_click" name="image_click" value="false">
             <label>Изменение X:</label>
             <div>
                 <button type="button" class="x-button" id="x-4" onclick="setX(-4)">-4</button>
@@ -223,7 +258,7 @@
             <br>
 
             <label for="y_value_input">Изменение Y (от -5 до 5):</label>
-            <input type="text" id="y_value_input" name="y_value_input">
+            <input type="text" id="y_value_input" name="y_value_input" >
             <br>
 
             <label>Изменение R:</label>
@@ -242,7 +277,38 @@
 
         <h3>График области</h3>
         <p>Нажмите на изображение, чтобы выбрать координаты X и Y:</p>
-        <img src="image.jpg" alt="Координатная плоскость" style="width:300px;height:300px;" onclick="handleClick(event);">
+        <div class="graph-container">
+            <img src="image2.jpg" alt="Координатная плоскость" style="width:500px;height:500px;" onclick="handleClick(event);">
+            <%
+                // Отображение всех точек
+                List<Result> points = (List<Result>) session.getAttribute("points");
+                if (points != null) {
+                    double graphWidth = 500;  // Фактическая ширина графика
+                    double graphHeight = 500; // Фактическая высота графика
+                    double offsetX = graphWidth / 2;  // Центр по X
+                    double offsetY = graphHeight / 2; // Центр по Y
+
+                    for (Result point : points) {
+                        // Преобразуем координаты точки для изображения (500px ширина и высота картинки)
+                        double px = (point.getX() / point.getRadius()) * (graphWidth / 2) + offsetX;
+                        double py = offsetY - (point.getY() / point.getRadius()) * (graphHeight / 2);
+
+                        // Проверка на границы: чтобы точки не выходили за пределы изображения
+                        if (px < 0) px = 0;
+                        if (px > graphWidth) px = graphWidth;
+                        if (py < 0) py = 0;
+                        if (py > graphHeight) py = graphHeight;
+
+                        String color = point.isInside() ? "green" : "red";
+            %>
+            <div class="dot" style="left:<%= px %>px; top:<%= py %>px; background-color:<%= color %>;"></div>
+            <%
+                    }
+                }
+            %>
+        </div>
+
+
 
         <h3>Результаты</h3>
         <table>
