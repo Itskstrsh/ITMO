@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+<h:head>
+    <title>Laboratornaya №3</title>
+    <h:outputStylesheet name="helloStyles.css"/>
+</h:head>
+
+<h:body>
+    <div class="container">
+        <h1>Лабораторная №3</h1>
+        <h:panelGroup>
+            <h:outputText value="Рощин Константин Эдуардович" styleClass="info-text" /><br/>
+            <h:outputText value="Группа: P3222" styleClass="info-text" /><br/>
+            <h:outputText value="Вариант: 993" styleClass="info-text" /><br/>
+        </h:panelGroup>
+        <div class="timer">
+            <h:outputText id="clock">0_0</h:outputText><br/>
+            <h:outputText id="date" styleClass="date-style">00.00.0000</h:outputText>
+        </div>
+
+        <h:form>
+            <h:commandLink value="Перейти на основную страницу" action="goToMain" styleClass="link" />
+        </h:form>
+    </div>
+</h:body>
+
+<script>
+    function updateClock(){
+        const now = new Date();
+        document.getElementById('clock').innerHTML = now.toLocaleTimeString();
+        document.getElementById('date').innerHTML = now.toLocaleDateString();
+    }
+    setInterval(updateClock, 8000);
+    window.onload = updateClock;
+</script>
+</html>

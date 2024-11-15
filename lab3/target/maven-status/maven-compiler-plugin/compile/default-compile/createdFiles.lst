@@ -1,0 +1,12 @@
+services\ResultRepository.class
+beans\XCoordBean.class
+beans\YCoordBean.class
+data\AreaChecker.class
+beans\ResultBean.class
+services\ResultService.class
+utils\Truncate.class
+entity\ResultEntity$ResultEntityBuilder.class
+entity\ResultEntity.class
+data\Api.class
+services\AddResultRequest.class
+beans\RCoordBean.class
