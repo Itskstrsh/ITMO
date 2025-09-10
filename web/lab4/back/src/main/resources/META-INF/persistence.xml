@@ -1,0 +1,16 @@
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.2">
+    <persistence-unit name="PU" transaction-type="JTA">
+        <jta-data-source>java:/OracleDS</jta-data-source>
+        <class>entity.ResultEntity</class>
+        <class>entity.UserEntity</class>
+        <properties>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:oracle:thin:@localhost:1521:XE"/>
+            <property name="jakarta.persistence.jdbc.user" value="system"/>
+            <property name="jakarta.persistence.jdbc.password" value="Qfc12erty"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>
