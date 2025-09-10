@@ -1,2 +1,1 @@
-# opi #@#@#@R@#)(*$@Y@#RGJKW BFWEJFB WEFB WEBf 
-SYKA
+# лабы по основам программной инженерии
