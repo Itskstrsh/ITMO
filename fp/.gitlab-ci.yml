@@ -1,0 +1,26 @@
+image: ocaml/opam:debian-12-ocaml-5.1
+stages: [format, build, test]
+variables: { OPAMYES: "true" }
+
+before_script:
+  - opam update
+  - opam switch show
+  - opam install dune ocamlformat.0.26.2 alcotest
+
+format:
+  stage: format
+  script:
+    - ocamlformat --check $(git ls-files '*.ml' '*.mli')
+
+
+build:
+  stage: build
+  script:
+    - dune build @all
+  artifacts: { when: always, paths: [ _build/log ] }
+
+test:
+  stage: test
+  script:
+    - dune runtest --no-buffer
+  artifacts: { when: always, paths: [ _build/_tests ] }
