@@ -4,6 +4,5 @@ _opam/
 *.cmo
 *.cmx
 *.o
-dune-project
 .ocamlformat
 gitlab-runner_amd64.deb
