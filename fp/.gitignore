@@ -6,3 +6,4 @@ _opam/
 *.o
 dune-project
 .ocamlformat
+gitlab-runner_amd64.deb

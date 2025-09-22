@@ -1,16 +1,16 @@
-# лучше этот тег: он точнее и обычно есть
-image: ocaml/opam:ubuntu-22.04-ocaml-5.2
-
 stages: [format, build, test]
+
+default:
+  tags: [wsl-shell]
 
 variables:
   OPAMYES: "true"
-  DOCKER_IMAGE_PULL_POLICY: "always"   # переопределяем политику pull
 
 before_script:
+  - eval $(opam env)
   - opam update
-  - opam switch show
-  - opam install dune ocamlformat.0.26.2 alcotest
+  - opam switch show || opam switch create 5.2.1
+  - opam install -y dune ocamlformat.0.26.2 alcotest
 
 format:
   stage: format
