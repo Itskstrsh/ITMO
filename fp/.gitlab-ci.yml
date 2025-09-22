@@ -6,6 +6,7 @@ stages:
   tags: [wsl-shell]
   before_script:
     - eval $(opam env)  
+    - cd fp
 
 format:
   stage: check
