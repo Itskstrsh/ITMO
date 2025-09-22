@@ -1,39 +1,27 @@
-stages: [format, lint, test]
+stages:
+  - check
+  - test
 
-variables:
-  OPAMYES: "true"
-  OPAMNOENVNOTICE: "true"
-
-before_script:
-  - if [ ! -d "$HOME/.opam" ]; then opam init -y --disable-sandboxing --no-setup; fi
-  - opam switch list --short | grep -qx "5.2.1" || opam switch create 5.2.1 ocaml-base-compiler.5.2.1
-  - eval $(opam env --switch=5.2.1 --set-switch)
-  - opam install -y dune ocamlformat.0.26.2 alcotest
+.check-template:
+  tags: [wsl-shell]
+  before_script:
+    - eval $(opam env)  
 
 format:
-  stage: format
-  tags: [wsl-shell]
+  stage: check
+  extends: .check-template
   script:
     - FILES="$(git ls-files '*.ml' '*.mli')"
     - if [ -n "$FILES" ]; then ocamlformat --check $FILES; fi
-  artifacts:
-    when: always
-    paths: [ _build/log ]
 
 lint:
-  stage: lint
-  tags: [wsl-shell]
+  stage: check
+  extends: .check-template
   script:
-    - dune build @all
-  artifacts:
-    when: always
-    paths: [ _build/log ]
+    - dune build @all     
 
 test:
   stage: test
-  tags: [wsl-shell]
+  extends: .check-template
   script:
     - dune runtest --no-buffer
-  artifacts:
-    when: always
-    paths: [ _build/_tests ]
