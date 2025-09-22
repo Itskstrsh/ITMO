@@ -1,10 +1,8 @@
 stages: [format, lint, test]
 
-default:
-  tags: [wsl-shell]     
-  variables:
-    OPAMYES: "true"
-    OPAMNOENVNOTICE: "true"   
+variables:
+  OPAMYES: "true"
+  OPAMNOENVNOTICE: "true"
 
 before_script:
   - if [ ! -d "$HOME/.opam" ]; then opam init -y --disable-sandboxing --no-setup; fi
@@ -14,15 +12,17 @@ before_script:
 
 format:
   stage: format
+  tags: [wsl-shell]
   script:
     - FILES="$(git ls-files '*.ml' '*.mli')"
     - if [ -n "$FILES" ]; then ocamlformat --check $FILES; fi
   artifacts:
     when: always
-    paths: [ _build/log ]  
+    paths: [ _build/log ]
 
 lint:
   stage: lint
+  tags: [wsl-shell]
   script:
     - dune build @all
   artifacts:
@@ -31,6 +31,7 @@ lint:
 
 test:
   stage: test
+  tags: [wsl-shell]
   script:
     - dune runtest --no-buffer
   artifacts:
