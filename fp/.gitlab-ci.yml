@@ -1,6 +1,11 @@
-image: ocaml/opam:debian-12-ocaml-5.1
+# лучше этот тег: он точнее и обычно есть
+image: ocaml/opam:ubuntu-22.04-ocaml-5.2
+
 stages: [format, build, test]
-variables: { OPAMYES: "true" }
+
+variables:
+  OPAMYES: "true"
+  DOCKER_IMAGE_PULL_POLICY: "always"   # переопределяем политику pull
 
 before_script:
   - opam update
@@ -10,8 +15,8 @@ before_script:
 format:
   stage: format
   script:
-    - ocamlformat --check $(git ls-files '*.ml' '*.mli')
-
+    - FILES="$(git ls-files '*.ml' '*.mli')"
+    - if [ -n "$FILES" ]; then ocamlformat --check $FILES; fi
 
 build:
   stage: build

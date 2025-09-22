@@ -1,7 +1,3 @@
-(***********************************************************************)
-(* Общая библиотека для lab1: Euler #8 и Euler #22                     *)
-(***********************************************************************)
-
 module Euler8 = struct
   let big_number_str =
     {|
@@ -72,7 +68,7 @@ module Euler8 = struct
       let p_here = product_slice64 arr i k in
       Int64.max p_here (max_product_non_tail k arr (i + 1))
 
-  (* модульная: окна -> map/filter/fold *)
+  (* модульная *)
   let rec take m xs =
     if m <= 0 then []
     else match xs with [] -> [] | x :: tl -> x :: take (m - 1) tl
