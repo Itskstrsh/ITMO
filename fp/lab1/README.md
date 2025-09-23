@@ -130,6 +130,7 @@
       in loop 1 0L
 
 Варианты решения:
+
     (* 1a) Хвостовая рекурсия*)
     let tail_score (names_sorted : string list) : int64 =
       let rec loop idx acc = function
