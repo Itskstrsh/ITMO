@@ -97,17 +97,17 @@
 
 Простой CSV-парсер:
 
-  let remove_all_quotes (s : string) : string =
-    let b = Buffer.create (String.length s) in
-    String.iter (fun c -> if c <> '"' then Buffer.add_char b c) s;
-    Buffer.contents b
+    let remove_all_quotes (s : string) : string =
+      let b = Buffer.create (String.length s) in
+      String.iter (fun c -> if c <> '"' then Buffer.add_char b c) s;
+      Buffer.contents b
 
-  let split_csv_names (s : string) : string list =
-    s
-    |> remove_all_quotes
-    |> String.split_on_char ','
-    |> List.map String.trim
-    |> List.filter (fun t -> t <> "")
+    let split_csv_names (s : string) : string list =
+      s
+      |> remove_all_quotes
+      |> String.split_on_char ','
+      |> List.map String.trim
+      |> List.filter (fun t -> t <> "")
 
 
 Оценка имени:
