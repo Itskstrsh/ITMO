@@ -113,7 +113,7 @@ let max_map (k : int) (arr : int array) : int64 =
 let max_loops (k : int) (arr : int array) : int64 =
   let n = Array.length arr in
   let best = ref 0L in
-  for i = 0 to n - k do
+  for i = 0 to n - k do 
     let p = ref 1L in
     for j = i to i + k - 1 do
       p := Int64.mul !p (Int64.of_int arr.(j))
@@ -132,7 +132,7 @@ let seq_multip (k : int) (arr : int array) : int64 Seq.t =
         let p = window_multip arr i k in
         Some (p, i + 1))
     0
-
+ 
 let max_seq (k : int) (arr : int array) : int64 =
   Seq.fold_left Int64.max 0L (seq_multip k arr)
 

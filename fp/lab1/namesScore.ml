@@ -6,43 +6,17 @@ let read_all (path : string) : string =
   s
 
 (* Разделяем по запятым и снимаем кавычки.*)
+let remove_all_quotes (s : string) : string =
+  let b = Buffer.create (String.length s) in
+  String.iter (fun c -> if c <> '"' then Buffer.add_char b c) s;
+  Buffer.contents b
+
 let split_csv_names (s : string) : string list =
-  let n = String.length s in
-  let buf = Buffer.create 16 in
-  let rec loop i acc =
-    if i = n then
-      let token = Buffer.contents buf in
-      let token = String.trim token in
-      let token =
-        if
-          String.length token >= 2
-          && token.[0] = '"'
-          && token.[String.length token - 1] = '"'
-        then String.sub token 1 (String.length token - 2)
-        else token
-      in
-      List.rev (if token = "" then acc else token :: acc)
-    else
-      match s.[i] with
-      | ',' ->
-          let token = Buffer.contents buf in
-          Buffer.clear buf;
-          let token = String.trim token in
-          let token =
-            if
-              String.length token >= 2
-              && token.[0] = '"'
-              && token.[String.length token - 1] = '"'
-            then String.sub token 1 (String.length token - 2)
-            else token
-          in
-          let acc = if token = "" then acc else token :: acc in
-          loop (i + 1) acc
-      | c ->
-          Buffer.add_char buf c;
-          loop (i + 1) acc
-  in
-  loop 0 []
+  s
+  |> remove_all_quotes
+  |> String.split_on_char ','
+  |> List.map String.trim
+  |> List.filter (fun t -> t <> "")
 
 (* Оценка имени: A=1,..,Z=26; игнорируем не-буквы *)
 let name_value (name : string) : int =

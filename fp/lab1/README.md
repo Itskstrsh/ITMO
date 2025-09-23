@@ -95,29 +95,20 @@
 
 ### Euler #22 — сумма «оценок» имён
 
-Простой CSV-парсер (один проход, снятие кавычек):
+Простой CSV-парсер:
 
-    let split_csv_names s =
-      let n = String.length s and buf = Buffer.create 16 in
-      let rec loop i acc =
-        if i = n then
-          let t = Buffer.contents buf |> String.trim in
-          let t =
-            if String.length t >= 2 && t.[0] = '"' && t.[String.length t-1] = '"'
-            then String.sub t 1 (String.length t-2) else t
-          in
-          List.rev (if t = "" then acc else t :: acc)
-        else match s.[i] with
-          | ',' ->
-              let t = Buffer.contents buf |> String.trim in
-              Buffer.clear buf;
-              let t =
-                if String.length t >= 2 && t.[0] = '"' && t.[String.length t-1] = '"'
-                then String.sub t 1 (String.length t-2) else t
-              in
-              loop (i+1) (if t = "" then acc else t :: acc)
-          | c -> Buffer.add_char buf c; loop (i+1) acc
-      in loop 0 []
+  let remove_all_quotes (s : string) : string =
+    let b = Buffer.create (String.length s) in
+    String.iter (fun c -> if c <> '"' then Buffer.add_char b c) s;
+    Buffer.contents b
+
+  let split_csv_names (s : string) : string list =
+    s
+    |> remove_all_quotes
+    |> String.split_on_char ','
+    |> List.map String.trim
+    |> List.filter (fun t -> t <> "")
+
 
 Оценка имени:
 
