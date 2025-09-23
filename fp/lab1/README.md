@@ -20,18 +20,25 @@
 
 Парсинг в список/массив цифр:
 
-    let digits_of_string s =
-      String.to_seq s
-      |> Seq.filter (fun c -> '0' <= c && c <= '9')
-      |> Seq.map (fun c -> Char.code c - Char.code '0')
-      |> List.of_seq
+    let str_to_mas (s : string) : int list =
+      let n = String.length s in
+      let rec loop i acc =
+        if i = n then List.rev acc
+        else
+          match s.[i] with
+          | '0' .. '9' as c ->
+              let d = Char.code c - Char.code '0' in
+              loop (i + 1) (d :: acc)
+          | _ -> loop (i + 1) acc
+      in
+      loop 0 []
 
-    let digits_list = digits_of_string big_number_str
-    let digits_arr  = Array.of_list digits_list
+    let digits_list : int list = str_to_mas dano
+    let digits_arr : int array = Array.of_list digits_list
 
 Произведение окна (в `int64`):
 
-    let product_slice64 (arr:int array) (i:int) (k:int) : int64 =
+    let window_multip (arr:int array) (i:int) (k:int) : int64 =
       let rec loop j left acc =
         if left = 0 then acc
         else loop (j+1) (left-1) Int64.(acc * of_int arr.(j))
@@ -41,23 +48,23 @@
 Варианты решения (фрагменты):
 
     (* 1) хвостовая рекурсия по началу окна *)
-    let max_product_tail k arr =
+    let max_tail k arr =
       let n = Array.length arr in
       let rec scan i best =
         if i + k > n then best
-        else scan (i+1) Int64.(max best (product_slice64 arr i k))
+        else scan (i+1) Int64.(max best (window_multip arr i k))
       in scan 0 0L
 
     (* 2) обычная рекурсия *)
-    let rec max_product_non_tail k arr i =
+    let rec max_non_tail k arr i =
       let n = Array.length arr in
       if i + k > n then 0L
-      else Int64.max (product_slice64 arr i k) (max_product_non_tail k arr (i+1))
+      else Int64.max (window_multip arr i k) (max_non_tail k arr (i+1))
 
     (* 3) модульный стиль: окна -> map -> fold *)
-    let max_via_map k arr =
+    let max_map k arr =
       let n = Array.length arr in
-      List.init (n - k + 1) (fun i -> product_slice64 arr i k)
+      List.init (n - k + 1) (fun i -> window_multip arr i k)
       |> List.fold_left Int64.max 0L
 
     (* 4) циклы *)
@@ -112,7 +119,7 @@
           | c -> Buffer.add_char buf c; loop (i+1) acc
       in loop 0 []
 
-Оценка имени и суммирование:
+Оценка имени:
 
     let name_value nm =
       String.fold_left (fun acc c ->
@@ -121,13 +128,6 @@
         then acc + (Char.code c - Char.code 'A' + 1)
         else acc
       ) 0 nm
-
-    let total_score_tail names_sorted =
-      let rec loop idx acc = function
-        | [] -> acc
-        | nm :: tl ->
-            loop (idx+1) Int64.(acc + of_int (idx * name_value nm)) tl
-      in loop 1 0L
 
 Варианты решения:
 
