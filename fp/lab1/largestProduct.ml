@@ -1,3 +1,6 @@
+module Euler8 = struct
+
+
 let dano =
   {|
 73167176531330624919225119674426574742355349194934
@@ -24,7 +27,6 @@ let dano =
 
 let k = 13
 
-(* str -> [int]*)
 let str_to_mas (s : string) : int list =
   let n = String.length s in
   let rec loop i acc =
@@ -41,27 +43,6 @@ let str_to_mas (s : string) : int list =
 let digits_list : int list = str_to_mas dano
 let digits_arr : int array = Array.of_list digits_list
 
-(* Умножение цифр списка — Int64, чтобы избежать переполнения.*)
-let multiply64 (xs : int list) : int64 =
-  List.fold_left (fun acc d -> Int64.mul acc (Int64.of_int d)) 1L xs
-
-(* Берёт первые [m] элементов списка *)
-let rec take m xs =
-  if m <= 0 then []
-  else match xs with [] -> [] | x :: tl -> x :: take (m - 1) tl
-
-(* Длина списка, хвоствовая рекурсия.*)
-let length xs =
-  let rec go acc ys = match ys with [] -> acc | _ :: tl -> go (acc + 1) tl in
-  go 0 xs
-
-(* Список окон размера k для списка. Неэффективный, но наглядный.*)
-let windows_k_list (k : int) (xs : int list) : int list list =
-  let rec build acc ys =
-    if length ys < k then List.rev acc
-    else build (take k ys :: acc) (List.tl ys)
-  in
-  build [] xs
 
 (* 1. Монолитные реализации*)
 (* 1a) Хвостовая рекурсия*)
@@ -72,7 +53,7 @@ let window_multip (arr : int array) (i : int) (cnt : int) : int64 =
       let acc' = Int64.mul acc (Int64.of_int arr.(j)) in
       loop (j + 1) (left - 1) acc'
   in
-  loop i cnt 1L (* хвостовая рекурсия *)
+  loop i cnt 1L 
 
 let max_tail (k : int) (arr : int array) : int64 =
   let n = Array.length arr in
@@ -93,15 +74,45 @@ let rec max_non_tail (k : int) (arr : int array) (i : int) : int64 =
     let p_here = window_multip arr i k in
     Int64.max p_here (max_non_tail k arr (i + 1))
 
-(* 2. Модульная реализация*)
+
+
+(* 2. Модульная реализация *)
+module Windows = struct
+  let rec take n = function
+    | _ when n <= 0 -> []
+    | [] -> []
+    | x::xs -> x :: take (n-1) xs
+
+  let rec build k xs acc =
+    match xs with
+    | _ when List.length xs < k -> List.rev acc
+    | _ -> build k (List.tl xs) (take k xs :: acc)
+
+  let of_list k xs = build k xs []
+end
+
+module Filter = struct
+  let no_zeros w = not (List.exists ((=) 0) w)
+end
+
+module Product64 = struct
+  let of_digits (xs : int list) : int64 =
+    List.fold_left (fun acc d -> Int64.mul acc (Int64.of_int d)) 1L xs
+end
+
+module Reduce64 = struct
+  let max = List.fold_left Int64.max 0L
+end
+
 let modular (k : int) (xs : int list) : int64 =
-  xs |> windows_k_list k
-  |> List.filter (fun w -> not (List.exists (( = ) 0) w))
-  |> List.map multiply64 (* отображение: окно -> произведение *)
-  |> List.fold_left Int64.max 0L (* свёртка: максимум *)
+  xs
+  |> Windows.of_list k
+  |> List.filter Filter.no_zeros
+  |> List.map Product64.of_digits
+  |> Reduce64.max
+
 
 (* 3. Генерация последовательности с помощью map*)
-(* Генерируем список индексов [0, ...,  n-k] и map-ом считаем P(i) *)
 let max_map (k : int) (arr : int array) : int64 =
   let n = Array.length arr in
   let idxs = List.init (n - k + 1) (fun i -> i) in
@@ -136,19 +147,6 @@ let seq_multip (k : int) (arr : int array) : int64 Seq.t =
 let max_seq (k : int) (arr : int array) : int64 =
   Seq.fold_left Int64.max 0L (seq_multip k arr)
 
-(* 6. Python реализация
-   from math import prod
-   s = """7316717653......52963450"""
-   digits = [int(c) for c in s if c.isdigit()]
-   K = 13
-   ans = 0
-   for i in range(len(digits)-K+1):
-       p = prod(digits[i:i+K])
-       if p > ans:
-           ans = p
-   print(ans)  # 23514624000
-*)
-
 let () =
   let expected = 23514624000L in
   let answers =
@@ -167,3 +165,6 @@ let () =
         (if v = expected then " OK " else " Failed"))
     answers;
   Printf.printf "Expected = %Ld\n" expected
+end
+
+module _ = Euler8

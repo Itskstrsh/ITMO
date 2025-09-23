@@ -1,3 +1,6 @@
+module Euler22 = struct
+
+
 let read_all (path : string) : string =
   let ch = open_in_bin path in
   let len = in_channel_length ch in
@@ -5,7 +8,6 @@ let read_all (path : string) : string =
   close_in ch;
   s
 
-(* Разделяем по запятым и снимаем кавычки.*)
 let remove_all_quotes (s : string) : string =
   let b = Buffer.create (String.length s) in
   String.iter (fun c -> if c <> '"' then Buffer.add_char b c) s;
@@ -18,15 +20,18 @@ let split_csv_names (s : string) : string list =
   |> List.map String.trim
   |> List.filter (fun t -> t <> "")
 
-(* Оценка имени: A=1,..,Z=26; игнорируем не-буквы *)
+
 let name_value (name : string) : int =
-  let total = ref 0 in
-  for i = 0 to String.length name - 1 do
-    let c = Char.uppercase_ascii name.[i] in
-    if 'A' <= c && c <= 'Z' then
-      total := !total + (Char.code c - Char.code 'A' + 1)
-  done;
-  !total
+  let score c =
+    let c = Char.uppercase_ascii c in
+    if 'A' <= c && c <= 'Z' then Char.code c - Char.code 'A' + 1 else 0
+  in
+  let rec loop i acc =
+    if i = String.length name then acc
+    else loop (i + 1) (acc + score name.[i])
+  in
+  loop 0 0
+
 
 let sort_names (xs : string list) : string list = List.sort String.compare xs
 
@@ -50,10 +55,28 @@ let rec non_tail_score (idx : int) (names_sorted : string list) : int64 =
       Int64.add here (non_tail_score (idx + 1) tl)
 
 (* 2. Модульная реализация *)
+module Index = struct
+  let attach (names : string list) : (int * string) list =
+    List.mapi (fun i nm -> (i + 1, nm)) names
+end
+
+module Score = struct
+  let by_name (i, nm : int * string) : int =
+    i * name_value nm
+end
+
+module Reduce64 = struct
+  let sum_int_as_int64 (xs : int list) : int64 =
+    List.fold_left (fun acc v -> Int64.add acc (Int64.of_int v)) 0L xs
+end
+
 let modular_score (names_sorted : string list) : int64 =
   names_sorted
-  |> List.mapi (fun i nm -> (i + 1) * name_value nm) (* map с индексом *)
-  |> List.fold_left (fun acc v -> Int64.add acc (Int64.of_int v)) 0L
+  |> Index.attach
+  |> List.map Score.by_name
+  |> Reduce64.sum_int_as_int64
+
+
 
 (* 3. Генерация индексов через map *)
 let map_score (names_sorted : string list) : int64 =
@@ -82,14 +105,6 @@ let seq_score (names_sorted : string list) : int64 =
   in
   Seq.fold_left (fun acc v -> Int64.add acc (Int64.of_int v)) 0L seq
 
-(* Python реализация
-   with open('names.txt', 'r') as f:
-       s = f.read()
-   names = [t.strip('"') for t in s.split(',')]
-   names.sort()
-   ans = sum((i+1)*sum(ord(c)-64 for c in name if c.isalpha()) for i, name in enumerate(names))
-   print(ans)
-*)
 
 let solution (csv : string) : int64 * (string * int64) list =
   let names = split_csv_names csv |> sort_names in
@@ -123,3 +138,6 @@ let () =
       Printf.printf "%-2s -> %Ld%s\n" name v mark)
     variants;
   Option.iter (fun e -> Printf.printf "Expected = %Ld\n" e) expected
+end
+
+module _ = Euler22

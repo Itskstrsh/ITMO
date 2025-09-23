@@ -1,7 +1,7 @@
 open Alcotest
 
 let test_euler8 () =
-  let open Common.Euler8 in
+  let open LargestProduct.Euler8 in
   let k = 13 in
   let exp = 23514624000L in
   check int64 "tail" exp (max_tail k digits_arr);
@@ -12,7 +12,7 @@ let test_euler8 () =
   check int64 "seq" exp (max_seq k digits_arr)
 
 let test_euler22 () =
-  let open Common.Euler22 in
+  let open NamesScore.Euler22 in
   let csv = In_channel.with_open_text "names.txt" In_channel.input_all in
   let names = csv |> split_csv_names |> sort_names in
   let exp = 871198282L in
