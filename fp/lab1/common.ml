@@ -1,5 +1,5 @@
 module Euler8 = struct
-  let big_number_str =
+  let dano =
     {|
 73167176531330624919225119674426574742355349194934
 96983520312774506326239578318016984801869478851843
@@ -23,7 +23,7 @@ module Euler8 = struct
 71636269561882670428252483600823257530420752963450
 |}
 
-  let digits_of_string (s : string) : int list =
+  let str_to_mas (s : string) : int list =
     let n = String.length s in
     let rec loop i acc =
       if i = n then List.rev acc
@@ -36,10 +36,10 @@ module Euler8 = struct
     in
     loop 0 []
 
-  let digits_list : int list = digits_of_string big_number_str
+  let digits_list : int list = str_to_mas dano
   let digits_arr : int array = Array.of_list digits_list
 
-  let product_slice64 (arr : int array) (i : int) (cnt : int) : int64 =
+  let window_multip (arr : int array) (i : int) (cnt : int) : int64 =
     let rec loop j left acc =
       if left = 0 then acc
       else
@@ -49,24 +49,24 @@ module Euler8 = struct
     loop i cnt 1L
 
   (* 1a. хвостовая *)
-  let max_product_tail (k : int) (arr : int array) : int64 =
+  let max_tail (k : int) (arr : int array) : int64 =
     let n = Array.length arr in
     let rec scan i best =
       if i + k > n then best
       else
-        let p = product_slice64 arr i k in
+        let p = window_multip arr i k in
         let best' = if p > best then p else best in
         scan (i + 1) best'
     in
     scan 0 0L
 
   (* 1b. не хвостовая *)
-  let rec max_product_non_tail (k : int) (arr : int array) (i : int) : int64 =
+  let rec max_non_tail (k : int) (arr : int array) (i : int) : int64 =
     let n = Array.length arr in
     if i + k > n then 0L
     else
-      let p_here = product_slice64 arr i k in
-      Int64.max p_here (max_product_non_tail k arr (i + 1))
+      let p_here = window_multip arr i k in
+      Int64.max p_here (max_non_tail k arr (i + 1))
 
   (* модульная *)
   let rec take m xs =
@@ -84,23 +84,23 @@ module Euler8 = struct
     in
     build [] xs
 
-  let product_list64 (xs : int list) : int64 =
+  let multiply64 (xs : int list) : int64 =
     List.fold_left (fun acc d -> Int64.mul acc (Int64.of_int d)) 1L xs
 
-  let modular_solution (k : int) (xs : int list) : int64 =
+  let modular (k : int) (xs : int list) : int64 =
     xs |> windows_k_list k
     |> List.filter (fun w -> not (List.exists (( = ) 0) w))
-    |> List.map product_list64
+    |> List.map multiply64
     |> List.fold_left Int64.max 0L
 
   (* через map индексов *)
-  let max_via_map (k : int) (arr : int array) : int64 =
+  let max_map (k : int) (arr : int array) : int64 =
     let n = Array.length arr in
-    List.init (n - k + 1) (fun i -> product_slice64 arr i k)
+    List.init (n - k + 1) (fun i -> window_multip arr i k)
     |> List.fold_left Int64.max 0L
 
   (* циклы *)
-  let max_via_for_loops (k : int) (arr : int array) : int64 =
+  let max_loops (k : int) (arr : int array) : int64 =
     let n = Array.length arr in
     let best = ref 0L in
     for i = 0 to n - k do
@@ -113,15 +113,15 @@ module Euler8 = struct
     !best
 
   (* ленивые Seq *)
-  let products_seq (k : int) (arr : int array) : int64 Seq.t =
+  let seq_multip (k : int) (arr : int array) : int64 Seq.t =
     let n = Array.length arr in
     Seq.unfold
       (fun i ->
-        if i + k > n then None else Some (product_slice64 arr i k, i + 1))
+        if i + k > n then None else Some (window_multip arr i k, i + 1))
       0
 
-  let max_via_seq (k : int) (arr : int array) : int64 =
-    Seq.fold_left Int64.max 0L (products_seq k arr)
+  let max_seq (k : int) (arr : int array) : int64 =
+    Seq.fold_left Int64.max 0L (seq_multip k arr)
 end
 
 module Euler22 = struct
@@ -172,7 +172,7 @@ module Euler22 = struct
 
   let sort_names (xs : string list) : string list = List.sort String.compare xs
 
-  let total_score_tail (names_sorted : string list) : int64 =
+  let tail_score (names_sorted : string list) : int64 =
     let rec loop idx acc = function
       | [] -> acc
       | nm :: tl ->
@@ -181,20 +181,20 @@ module Euler22 = struct
     in
     loop 1 0L names_sorted
 
-  let rec total_score_non_tail (idx : int) (names_sorted : string list) : int64
+  let rec non_tail_score (idx : int) (names_sorted : string list) : int64
       =
     match names_sorted with
     | [] -> 0L
     | nm :: tl ->
         let here = Int64.of_int (idx * name_value nm) in
-        Int64.add here (total_score_non_tail (idx + 1) tl)
+        Int64.add here (non_tail_score (idx + 1) tl)
 
-  let total_score_modular (names_sorted : string list) : int64 =
+  let modular_score (names_sorted : string list) : int64 =
     names_sorted
     |> List.mapi (fun i nm -> (i + 1) * name_value nm)
     |> List.fold_left (fun acc v -> Int64.add acc (Int64.of_int v)) 0L
 
-  let total_score_via_map_indices (names_sorted : string list) : int64 =
+  let map_score (names_sorted : string list) : int64 =
     let n = List.length names_sorted in
     let idxs = List.init n (fun i -> i + 1) in
     let values = List.map name_value names_sorted in
@@ -202,7 +202,7 @@ module Euler22 = struct
       (fun acc i v -> Int64.add acc (Int64.of_int (i * v)))
       0L idxs values
 
-  let total_score_for (names_sorted : string list) : int64 =
+  let loop_score (names_sorted : string list) : int64 =
     let arr = Array.of_list names_sorted in
     let n = Array.length arr in
     let total = ref 0L in
@@ -212,7 +212,7 @@ module Euler22 = struct
     done;
     !total
 
-  let total_score_seq (names_sorted : string list) : int64 =
+  let seq_score (names_sorted : string list) : int64 =
     let seq =
       List.to_seq names_sorted |> Seq.mapi (fun i nm -> (i + 1) * name_value nm)
     in

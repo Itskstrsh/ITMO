@@ -5,7 +5,7 @@ let read_all (path : string) : string =
   close_in ch;
   s
 
-(* Простейший парсер: разделяем по запятым и снимаем кавычки.*)
+(* Разделяем по запятым и снимаем кавычки.*)
 let split_csv_names (s : string) : string list =
   let n = String.length s in
   let buf = Buffer.create 16 in
@@ -58,7 +58,7 @@ let sort_names (xs : string list) : string list = List.sort String.compare xs
 
 (* 1. Монолитные реализации*)
 (* 1a) Хвостовая рекурсия*)
-let total_score_tail (names_sorted : string list) : int64 =
+let tail_score (names_sorted : string list) : int64 =
   let rec loop idx acc = function
     | [] -> acc
     | nm :: tl ->
@@ -68,21 +68,21 @@ let total_score_tail (names_sorted : string list) : int64 =
   loop 1 0L names_sorted
 
 (*1b) Обычная рекурсия *)
-let rec total_score_non_tail (idx : int) (names_sorted : string list) : int64 =
+let rec non_tail_score (idx : int) (names_sorted : string list) : int64 =
   match names_sorted with
   | [] -> 0L
   | nm :: tl ->
       let here = Int64.of_int (idx * name_value nm) in
-      Int64.add here (total_score_non_tail (idx + 1) tl)
+      Int64.add here (non_tail_score (idx + 1) tl)
 
 (* 2. Модульная реализация *)
-let total_score_modular (names_sorted : string list) : int64 =
+let modular_score (names_sorted : string list) : int64 =
   names_sorted
   |> List.mapi (fun i nm -> (i + 1) * name_value nm) (* map с индексом *)
   |> List.fold_left (fun acc v -> Int64.add acc (Int64.of_int v)) 0L
 
 (* 3. Генерация индексов через map *)
-let total_score_via_map_indices (names_sorted : string list) : int64 =
+let map_score (names_sorted : string list) : int64 =
   let n = List.length names_sorted in
   let idxs = List.init n (fun i -> i + 1) in
   let values = List.map name_value names_sorted in
@@ -91,7 +91,7 @@ let total_score_via_map_indices (names_sorted : string list) : int64 =
     0L idxs values
 
 (* 4. Спецсинтаксис циклов *)
-let total_score_for (names_sorted : string list) : int64 =
+let loop_score (names_sorted : string list) : int64 =
   let arr = Array.of_list names_sorted in
   let n = Array.length arr in
   let total = ref 0L in
@@ -102,7 +102,7 @@ let total_score_for (names_sorted : string list) : int64 =
   !total
 
 (* 5. Ленивые последовательности*)
-let total_score_seq (names_sorted : string list) : int64 =
+let seq_score (names_sorted : string list) : int64 =
   let seq =
     List.to_seq names_sorted |> Seq.mapi (fun i nm -> (i + 1) * name_value nm)
   in
@@ -117,16 +117,16 @@ let total_score_seq (names_sorted : string list) : int64 =
    print(ans)
 *)
 
-let solve_from_string (csv : string) : int64 * (string * int64) list =
+let solution (csv : string) : int64 * (string * int64) list =
   let names = split_csv_names csv |> sort_names in
   let variants =
     [
-      ("1a", total_score_tail names);
-      ("1b", total_score_non_tail 1 names);
-      ("2", total_score_modular names);
-      ("3", total_score_via_map_indices names);
-      ("4", total_score_for names);
-      ("5", total_score_seq names);
+      ("1a", tail_score names);
+      ("1b", non_tail_score 1 names);
+      ("2", modular_score names);
+      ("3", map_score names);
+      ("4", loop_score names);
+      ("5", seq_score names);
     ]
   in
   let first = snd (List.hd variants) in
@@ -136,16 +136,16 @@ let () =
   let path = "names.txt" in
   let csv = try read_all path with _ -> failwith "Fail not found" in
 
-  let expected_opt = Some 871198282L in
+  let expected = Some 871198282L in
 
-  let _answer, variants = solve_from_string csv in
+  let _answer, variants = solution csv in
   List.iter
     (fun (name, v) ->
       let mark =
-        match expected_opt with
+        match expected with
         | None -> ""
         | Some e -> if v = e then " OK" else " Failed "
       in
       Printf.printf "%-2s -> %Ld%s\n" name v mark)
     variants;
-  Option.iter (fun e -> Printf.printf "Expected = %Ld\n" e) expected_opt
+  Option.iter (fun e -> Printf.printf "Expected = %Ld\n" e) expected

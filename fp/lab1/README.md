@@ -10,11 +10,11 @@
 3) умножить её на позицию в отсортированном списке;
 4) сложить по всем именам.
 
-Обе задачи реализованы несколькими стилями: хвостовая/обычная рекурсия, модульный стиль `map/fold`, через индексы, императивные циклы и на `Seq`.
+Обе задачи реализованы несколькими стилями: хвостовая/обычная рекурсия, модульный стиль `map/fold`, через индексы, императивные циклы и ленивые последовательности.
 
 ---
 
-## Ключевые элементы реализации (минимальные комментарии)
+## Ключевые элементы реализации
 
 ### Euler #8 — максимум произведения 13 подряд идущих цифр
 
@@ -60,7 +60,29 @@
       List.init (n - k + 1) (fun i -> product_slice64 arr i k)
       |> List.fold_left Int64.max 0L
 
-    (* 4) императивные for-циклы; 5) Seq — аналогично *)
+    (* 4) циклы *)
+    let max_loops (k : int) (arr : int array) : int64 =
+      let n = Array.length arr in
+      let best = ref 0L in
+      for i = 0 to n - k do
+        let p = ref 1L in
+        for j = i to i + k - 1 do
+          p := Int64.mul !p (Int64.of_int arr.(j))
+        done;
+        if !p > !best then best := !p
+      done;
+      !best
+
+    (* 5) ленивые последовательности *)
+    let seq_multip (k : int) (arr : int array) : int64 Seq.t =
+      let n = Array.length arr in
+      Seq.unfold
+        (fun i ->
+          if i + k > n then None
+          else
+            let p = window_multip arr i k in
+            Some (p, i + 1))
+        0
 
 ---
 
@@ -107,15 +129,66 @@
             loop (idx+1) Int64.(acc + of_int (idx * name_value nm)) tl
       in loop 1 0L
 
-Другие варианты: обычная рекурсия, `List.mapi` + `fold_left`, индексы через `List.init`, императивные `for`, ленивые `Seq`.
+Варианты решения:
+    (* 1a) Хвостовая рекурсия*)
+    let tail_score (names_sorted : string list) : int64 =
+      let rec loop idx acc = function
+        | [] -> acc
+        | nm :: tl ->
+            let score = idx * name_value nm in
+            loop (idx + 1) (Int64.add acc (Int64.of_int score)) tl
+      in
+      loop 1 0L names_sorted
 
+    (*1b) Обычная рекурсия *)
+    let rec non_tail_score (idx : int) (names_sorted : string list) : int64 =
+      match names_sorted with
+      | [] -> 0L
+      | nm :: tl ->
+          let here = Int64.of_int (idx * name_value nm) in
+          Int64.add here (non_tail_score (idx + 1) tl)
+
+    (* 2. Модульная реализация *)
+    let modular_score (names_sorted : string list) : int64 =
+      names_sorted
+      |> List.mapi (fun i nm -> (i + 1) * name_value nm) (* map с индексом *)
+      |> List.fold_left (fun acc v -> Int64.add acc (Int64.of_int v)) 0L
+
+    (* 3. Генерация индексов через map *)
+    let map_score (names_sorted : string list) : int64 =
+      let n = List.length names_sorted in
+      let idxs = List.init n (fun i -> i + 1) in
+      let values = List.map name_value names_sorted in
+      List.fold_left2
+        (fun acc i v -> Int64.add acc (Int64.of_int (i * v)))
+        0L idxs values
+
+    (* 4. Спецсинтаксис циклов *)
+    let loop_score (names_sorted : string list) : int64 =
+      let arr = Array.of_list names_sorted in
+      let n = Array.length arr in
+      let total = ref 0L in
+      for i = 0 to n - 1 do
+        let v = name_value arr.(i) in
+        total := Int64.add !total (Int64.of_int ((i + 1) * v))
+      done;
+      !total
+
+    (* 5. Ленивые последовательности*)
+    let seq_score (names_sorted : string list) : int64 =
+      let seq =
+        List.to_seq names_sorted |> Seq.mapi (fun i nm -> (i + 1) * name_value nm)
+      in
+      Seq.fold_left (fun acc v -> Int64.add acc (Int64.of_int v)) 0L seq
+      
 ---
 
 ## Выводы
 
-- Использование **нескольких парадигм** на одной задаче повышает уверенность в корректности: функциональные (`map/fold/Seq`), рекурсивные и императивные решения сходятся к одному ответу.
-- **Хвостовая рекурсия** даёт предсказуемую глубину стека; **обычная рекурсия** короче по коду, но требует аккуратности.
-- **Императивные массивы и циклы** в OCaml удобны и производительны для плотных скользящих окон.
-- **Ленивые `Seq`** упрощают генерацию окон/потоков без промежуточных структур; для фиксированного окна не сложнее for-подхода.
-- Для произведений безопаснее сразу использовать **`int64`**, чтобы избежать переполнений.
-- Для `names.txt` достаточно надёжного **посимвольного CSV-парсера** с `Buffer` и снятием внешних кавычек.
+- Хвостовая рекурсия ведёт себя как обычный цикл: работает быстро и не ест лишнюю память. Обычная рекурсия короче на вид, но на длинных входах может упереться в стек.
+- Там, где нужно много раз подряд пройти по данным, обычные массивы и `for`-циклы получаются проще и часто быстрее.
+- `Seq` удобен, когда данные можно «делать по ходу» и не хранить лишние промежуточные списки — код получается аккуратнее.
+- Для произведений я использовал `int64`, чтобы не ловить переполнения на больших числах.
+
+
+**Итог:** Я посмотрел на базовые приёмы и абстракции языка OCaml. Реализовал простые алгоритмы и струтуры данных и применил их на задачах проекта Эйлера. 

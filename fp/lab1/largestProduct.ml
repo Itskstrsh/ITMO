@@ -25,7 +25,7 @@ let dano =
 let k = 13
 
 (* str -> [int]*)
-let digits_of_string (s : string) : int list =
+let str_to_mas (s : string) : int list =
   let n = String.length s in
   let rec loop i acc =
     if i = n then List.rev acc
@@ -38,19 +38,19 @@ let digits_of_string (s : string) : int list =
   in
   loop 0 []
 
-let digits_list : int list = digits_of_string dano
+let digits_list : int list = str_to_mas dano
 let digits_arr : int array = Array.of_list digits_list
 
 (* Умножение цифр списка — Int64, чтобы избежать переполнения.*)
-let product_list64 (xs : int list) : int64 =
+let multiply64 (xs : int list) : int64 =
   List.fold_left (fun acc d -> Int64.mul acc (Int64.of_int d)) 1L xs
 
-(* Берёт первые [m] элементов списка (короче, если не хватает).*)
+(* Берёт первые [m] элементов списка *)
 let rec take m xs =
   if m <= 0 then []
   else match xs with [] -> [] | x :: tl -> x :: take (m - 1) tl
 
-(* Длина списка; используем аккуратную хвостовую рекурсию.*)
+(* Длина списка, хвоствовая рекурсия.*)
 let length xs =
   let rec go acc ys = match ys with [] -> acc | _ :: tl -> go (acc + 1) tl in
   go 0 xs
@@ -65,7 +65,7 @@ let windows_k_list (k : int) (xs : int list) : int list list =
 
 (* 1. Монолитные реализации*)
 (* 1a) Хвостовая рекурсия*)
-let product_slice64 (arr : int array) (i : int) (cnt : int) : int64 =
+let window_multip (arr : int array) (i : int) (cnt : int) : int64 =
   let rec loop j left acc =
     if left = 0 then acc
     else
@@ -74,43 +74,43 @@ let product_slice64 (arr : int array) (i : int) (cnt : int) : int64 =
   in
   loop i cnt 1L (* хвостовая рекурсия *)
 
-let max_product_tail (k : int) (arr : int array) : int64 =
+let max_tail (k : int) (arr : int array) : int64 =
   let n = Array.length arr in
   let rec scan i best =
     if i + k > n then best
     else
-      let p = product_slice64 arr i k in
+      let p = window_multip arr i k in
       let best' = if p > best then p else best in
       scan (i + 1) best'
   in
   scan 0 0L
 
 (* 1b) Обычная рекурсия*)
-let rec max_product_non_tail (k : int) (arr : int array) (i : int) : int64 =
+let rec max_non_tail (k : int) (arr : int array) (i : int) : int64 =
   let n = Array.length arr in
   if i + k > n then 0L
   else
-    let p_here = product_slice64 arr i k in
-    Int64.max p_here (max_product_non_tail k arr (i + 1))
+    let p_here = window_multip arr i k in
+    Int64.max p_here (max_non_tail k arr (i + 1))
 
 (* 2. Модульная реализация*)
-let modular_solution (k : int) (xs : int list) : int64 =
+let modular (k : int) (xs : int list) : int64 =
   xs |> windows_k_list k
   |> List.filter (fun w -> not (List.exists (( = ) 0) w))
-  |> List.map product_list64 (* отображение: окно -> произведение *)
+  |> List.map multiply64 (* отображение: окно -> произведение *)
   |> List.fold_left Int64.max 0L (* свёртка: максимум *)
 
-(* 3. Генерация последовательности с помощью map                     *)
-(*    Генерируем список индексов [0; 1; ...; n-k] и map-ом считаем P(i) *)
-let max_via_map (k : int) (arr : int array) : int64 =
+(* 3. Генерация последовательности с помощью map*)
+(* Генерируем список индексов [0, ...,  n-k] и map-ом считаем P(i) *)
+let max_map (k : int) (arr : int array) : int64 =
   let n = Array.length arr in
   let idxs = List.init (n - k + 1) (fun i -> i) in
   idxs
-  |> List.map (fun i -> product_slice64 arr i k)
+  |> List.map (fun i -> window_multip arr i k)
   |> List.fold_left Int64.max 0L
 
 (* 4. Специальный синтаксис для циклов*)
-let max_via_for_loops (k : int) (arr : int array) : int64 =
+let max_loops (k : int) (arr : int array) : int64 =
   let n = Array.length arr in
   let best = ref 0L in
   for i = 0 to n - k do
@@ -123,18 +123,18 @@ let max_via_for_loops (k : int) (arr : int array) : int64 =
   !best
 
 (* 5. Ленивые последовательности*)
-let products_seq (k : int) (arr : int array) : int64 Seq.t =
+let seq_multip (k : int) (arr : int array) : int64 Seq.t =
   let n = Array.length arr in
   Seq.unfold
     (fun i ->
       if i + k > n then None
       else
-        let p = product_slice64 arr i k in
+        let p = window_multip arr i k in
         Some (p, i + 1))
     0
 
-let max_via_seq (k : int) (arr : int array) : int64 =
-  Seq.fold_left Int64.max 0L (products_seq k arr)
+let max_seq (k : int) (arr : int array) : int64 =
+  Seq.fold_left Int64.max 0L (seq_multip k arr)
 
 (* 6. Python реализация
    from math import prod
@@ -153,12 +153,12 @@ let () =
   let expected = 23514624000L in
   let answers =
     [
-      ("1a", max_product_tail k digits_arr);
-      ("1b", max_product_non_tail k digits_arr 0);
-      ("2", modular_solution k digits_list);
-      ("3", max_via_map k digits_arr);
-      ("4", max_via_for_loops k digits_arr);
-      ("5", max_via_seq k digits_arr);
+      ("1a", max_tail k digits_arr);
+      ("1b", max_non_tail k digits_arr 0);
+      ("2", modular k digits_list);
+      ("3", max_map k digits_arr);
+      ("4", max_loops k digits_arr);
+      ("5", max_seq k digits_arr);
     ]
   in
   List.iter
