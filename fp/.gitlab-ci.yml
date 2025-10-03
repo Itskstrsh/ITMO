@@ -2,7 +2,8 @@ stages: [check, test]
 
 variables:
   GIT_STRATEGY: clone  
-  GIT_DEPTH: 0         
+  GIT_DEPTH: 0   
+  BASH_ENV: /dev/null        
 
 .root-template:
   tags: [wsl-shell]
