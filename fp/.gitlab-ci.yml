@@ -14,11 +14,9 @@ default:
 
 format:
   stage: check
-  tags: [wsl-shell]
-  before_script:
-    - eval $(opam env)
+  extends: .check-template
   script:
-    - FILES="$(git ls-files 'fp/**/*.ml' 'fp/**/*.mli' || true)"
+    - FILES="$(git ls-files '*.ml' '*.mli' || true)"
     - if [ -n "$FILES" ]; then ocamlformat --check $FILES; fi
 
 lint:
