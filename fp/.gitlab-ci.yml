@@ -1,4 +1,6 @@
-image: ocaml/opam:debian-ocaml-5.2
+image:
+  name: ocaml/opam:debian-12-ocaml-5.1  
+  pull_policy: always                    
 
 stages: [check, test]
 
