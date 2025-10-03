@@ -1,5 +1,11 @@
 stages: [check, test]
 
+default:
+  before_script:
+    - rm -rf $CI_PROJECT_DIR/*
+    - git fetch --unshallow || true
+
+
 .check-template:
   tags: [wsl-shell]
   before_script:
