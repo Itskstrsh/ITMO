@@ -1,0 +1,3 @@
+(library
+ (name lab2)
+ (modules_without_implementation ordered))
