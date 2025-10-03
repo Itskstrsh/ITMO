@@ -1,8 +1,8 @@
 stages: [check, test]
 
 variables:
-  GIT_STRATEGY: clone     # всегда чистый клон
-  GIT_DEPTH: 0            # без shallow-истории (устраняет ошибки с FETCH_HEAD)
+  GIT_STRATEGY: clone  
+  GIT_DEPTH: 0         
 
 .root-template:
   tags: [wsl-shell]
@@ -20,7 +20,12 @@ format:
   extends: .root-template
   script:
     - FILES="$(git ls-files 'fp/**/*.ml' 'fp/**/*.mli' || true)"
-    - if [ -n "$FILES" ]; then ocamlformat --check $FILES; else echo "No OCaml files"; fi
+    - |
+      if [ -n "$FILES" ]; then
+        ocamlformat --check $FILES
+      else
+        echo "No OCaml files"
+      fi
 
 lint:
   stage: check
