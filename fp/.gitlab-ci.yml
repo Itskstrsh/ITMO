@@ -1,41 +1,33 @@
 stages: [check, test]
 
-# Надёжнее клонировать заново и без shallow-истории
 variables:
-  GIT_STRATEGY: clone
-  GIT_DEPTH: 0
+  GIT_STRATEGY: clone     # всегда чистый клон
+  GIT_DEPTH: 0            # без shallow-истории (устраняет ошибки с FETCH_HEAD)
 
-# Шаблон: запуск из КОРНЯ репозитория (без cd fp)
 .root-template:
   tags: [wsl-shell]
   before_script:
     - eval $(opam env)
 
-# Шаблон: запуск ВНУТРИ каталога fp
 .fp-template:
   tags: [wsl-shell]
   before_script:
     - eval $(opam env)
     - cd fp
 
-# --- Check: форматирование ---
 format:
   stage: check
   extends: .root-template
   script:
-    # если нужно, поставь конкретную версию форматтера:
-    # - opam install -y ocamlformat.0.27.0
     - FILES="$(git ls-files 'fp/**/*.ml' 'fp/**/*.mli' || true)"
     - if [ -n "$FILES" ]; then ocamlformat --check $FILES; else echo "No OCaml files"; fi
 
-# --- Check: сборка ---
 lint:
   stage: check
   extends: .fp-template
   script:
     - dune build @all
 
-# --- Test: прогон тестов ---
 test:
   stage: test
   extends: .fp-template
