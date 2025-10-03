@@ -1,3 +1,5 @@
 (test
  (name test_lab2)
- (libraries lab2 alcotest qcheck qcheck-alcotest))
+ (libraries lab2 alcotest qcheck qcheck-alcotest)
+ (preprocess
+  (pps bisect_ppx)))

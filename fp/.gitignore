@@ -6,3 +6,4 @@ _opam/
 *.o
 .ocamlformat
 gitlab-runner_amd64.deb
+.vscode/

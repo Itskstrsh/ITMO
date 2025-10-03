@@ -1,16 +1,19 @@
 (executable
  (name largestProduct)
  (modules largestProduct)
- (flags (:standard -w +a -warn-error +a)))
+ (flags
+  (:standard -w +a -warn-error +a)))
 
 (executable
  (name namesScore)
  (modules namesScore)
- (flags (:standard -w +a -warn-error +a)))
+ (flags
+  (:standard -w +a -warn-error +a)))
 
 (test
  (name tests)
  (modules tests largestProduct namesScore)
  (libraries alcotest)
  (deps names.txt)
- (flags (:standard -w +a -warn-error +a -w -70)))
+ (flags
+  (:standard -w +a -warn-error +a -w -70)))
