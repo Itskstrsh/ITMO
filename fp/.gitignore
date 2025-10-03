@@ -4,6 +4,5 @@ _opam/
 *.cmo
 *.cmx
 *.o
-.ocamlformat
 gitlab-runner_amd64.deb
 .vscode/
