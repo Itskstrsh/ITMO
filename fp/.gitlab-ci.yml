@@ -1,39 +1,26 @@
-image:
-  name: ocaml/opam:debian-12-ocaml-5.1  
-  pull_policy: always                    
-
 stages: [check, test]
 
-variables:
-  OPAMYES: "true"
-
-cache:
-  key: opam-cache
-  paths:
-    - /home/opam/.opam
-    - fp/_build
-
-.default:
+.check-template:
+  tags: [wsl-shell]
   before_script:
-    - opam update
-    - opam install dune alcotest qcheck qcheck-alcotest ocamlformat
+    - eval $(opam env)
     - cd fp
 
 format:
   stage: check
-  extends: .default
+  extends: .check-template
   script:
     - FILES="$(git ls-files '*.ml' '*.mli' || true)"
-    - if [ -n "$FILES" ]; then ocamlformat --check $FILES; else echo "No OCaml files"; fi
+    - if [ -n "$FILES" ]; then ocamlformat --check $FILES; fi
 
 lint:
   stage: check
-  extends: .default
+  extends: .check-template
   script:
     - dune build @all
 
 test:
   stage: test
-  extends: .default
+  extends: .check-template
   script:
     - dune runtest --no-buffer
